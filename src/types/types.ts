@@ -1,15 +1,15 @@
-export type Stocks = {
+export type Stock = {
   sku: string;
   stock: number;
 }
 
-export type Transactions = {
+export type Transaction = {
   sku: string;
   type: string;
   qty: number;
 }
 
-export type Matcher = {
+export type InStock = {
   sku: string;
   qty: number;
 }

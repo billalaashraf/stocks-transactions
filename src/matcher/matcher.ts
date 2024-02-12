@@ -1,20 +1,23 @@
-import { Loader } from "../loader"
-import { Files } from "../utils"
-import { Matcher, Stocks, Transactions } from "../types";
+import { LoadStocks, LoadTransactions } from "../loader";
+import { InStock, Stock, Transaction } from "../types";
 
-export const matcher = async (sku: string):Promise<Matcher> => {
-  const inStock: Matcher = {
+/**
+ * Retrieves the stock quantity for a given SKU.
+ * @param {string} sku - The stock keeping unit.
+ * @returns {Promise<InStock>} - An object containing the SKU and its quantity in stock.
+ */
+
+export const matcher = async (sku: string):Promise<InStock> => {
+  const inStock: InStock = {
     sku: sku,
     qty: 0
   }
-  const loadSku = await Loader<Stocks[]>(Files.stockFile);
-  const loadTransaction = await Loader<Transactions[]>(Files.transactionFile);
+  
+  const skus: Stock[] | undefined = await LoadStocks();
+  const transactions: Transaction[] | undefined = await LoadTransactions();
 
-  if (!loadSku || !loadTransaction)
-    throw new Error('Files not found');
-
-  let quantity: number = loadSku.find(stock => stock.sku === sku)?.stock ?? 0;
-  loadTransaction.filter(transaction => transaction.sku === sku)
+  let quantity: number = skus?.find(stock => stock.sku === sku)?.stock ?? 0;
+  transactions?.filter(transaction => transaction.sku === sku)
                 .every((transaction) => {
                   if (transaction.type === 'order') {
                     quantity -= transaction.qty;
@@ -23,7 +26,8 @@ export const matcher = async (sku: string):Promise<Matcher> => {
                   }
                   return quantity >= 0;
                 });
-  if (quantity === 0) throw new Error('Not in stock');
+  if (quantity <= 0) throw new Error('Not in stock');
   inStock.qty = quantity
+  
   return inStock;
 }

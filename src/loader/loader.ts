@@ -1,14 +1,16 @@
 import * as fs from 'fs';
-import { Stocks, Transactions } from '../types';
+import { Stock, Transaction } from '../types';
+import { Files } from "../utils"
 
-const Loader = async<T extends Stocks[] | Transactions[]>(file: string): Promise<T | undefined> => {
+const Loader = async<T> (file: string): Promise<T | undefined> => { 
   try {
-    const data = await fs.promises.readFile(file, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    console.error(err);
-    return;
+    return await fs.promises.readFile(file, 'utf8').then(JSON.parse)
+  } catch (error) {
+    return undefined
   }
 };
 
-export { Loader };
+const LoadStocks = async (): Promise<Stock[] | undefined> => Loader<Stock[] | undefined>(Files.stockFile);
+const LoadTransactions = async (): Promise<Transaction[] | undefined> => Loader<Transaction[]| undefined>(Files.transactionFile);
+
+export { Loader, LoadStocks, LoadTransactions };

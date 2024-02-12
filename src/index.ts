@@ -15,7 +15,6 @@ const options = program.opts();
 
 if (options.sku) {
   const sku = options.sku;
-  console.log(`SKU: ${sku}`);
   matcher(sku).then((result) => {
     console.table([result]);
   })
